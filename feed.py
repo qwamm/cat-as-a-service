@@ -1,0 +1,45 @@
+import socket
+import json
+
+UDP_IP = "127.0.0.1"
+UDP_REVEIVER_PORT = 5174
+UDP_SENDER_PORT = 7071
+
+BUFF_SIZE = 1024
+
+REPLY = ''
+prefered_food = ['Fish', 'Meat', 'Flash', 'Coffee', 'Donut']
+
+feeding_stat = {}
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.bind((UDP_IP, UDP_REVEIVER_PORT))
+
+try:
+    msg = ''
+    while True:
+        data, addr = sock.recvfrom(BUFF_SIZE)
+        print("received message: %s" % data)
+        data = data.decode('utf-8')
+        if data[-1] != '~':
+            msg += data[:-2]
+            part_received_msg = 'The Cat is amused by #%s' % data[-1]
+            sock.sendto(bytes(part_received_msg, 'utf-8'), (UDP_IP, UDP_SENDER_PORT))
+        else:
+            msg = data if msg == '' else msg + data
+            username = msg[msg.find('@') + 1:msg.find(' ')]
+            print(msg)
+            if any([food in msg for food in prefered_food]):
+                REPLY = b'Eaten by the cat'
+                feeding_stat[username] = 1
+            else:
+                REPLY = b'Ignored by the cat'
+                feeding_stat[username] = 0
+            msg = ''
+            print("FEEDING STATISTICS:")
+            print(feeding_stat)
+            with open("feed_stat.txt", "w") as f:
+                f.write(json.dumps(feeding_stat))
+            sock.sendto(REPLY, (UDP_IP, UDP_SENDER_PORT))
+except KeyboardInterrupt:
+    sock.close()
