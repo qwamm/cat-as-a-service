@@ -1,15 +1,56 @@
-<script setup>
-import {ref} from 'vue'
-import {useRouter } from 'vue-router'
-const login = ref('')
-const router = useRouter()
+ <script setup>
 
-function handle_login_input(event) {
-  console.log(login.value)
-  if (login.value !== '')
-  {
-    router.push({path: '/main', query: {login: login.value}})
-  }
+async function show_feed_statistics(event) {
+      try
+      {
+           const response = await fetch('http://51.250.111.213/download_feed_stat');
+
+           if (!response.ok) {
+              throw new Error('Ошибка загрузки');
+           }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'feed_stat.txt';
+            link.click();
+
+            window.URL.revokeObjectURL(url);
+       }
+       catch (error)
+       {
+            console.error('Ошибка:', error);
+            alert('Не удалось скачать файл');
+       }
+}
+
+async function show_pet_statistics(event)
+{
+      try
+      {
+           const response = await fetch('http://51.250.111.213/download_pet_stat');
+
+           if (!response.ok) {
+              throw new Error('Ошибка загрузки');
+           }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'pet_stat.txt';
+            link.click();
+
+            window.URL.revokeObjectURL(url);
+       }
+       catch (error)
+       {
+            console.error('Ошибка:', error);
+            alert('Не удалось скачать файл');
+       }
 }
 
 </script>
@@ -24,12 +65,12 @@ function handle_login_input(event) {
     <img src="./assets/cat.png">
   </div>
 
-  <div style = "position:absolute; left: 30%; top: 60%;">
-    <input style = "height: 40px; width: 800px;" v-model = "login" placeholder = "Enter your username to access the cat service">
-    <button style = "height: 44px;" @click = "handle_login_input"> Log in </button>
+  <div style = "position:absolute; left: 39%; top: 65%; display: flex; flex-direction: column;">
+    <button style = "height: 44px; width: 450px;" @click = "show_feed_statistics"> Статистика кормления кота </button>
+    &nbsp;&nbsp;&nbsp;
+    <button style = "height: 44px; width: 450px;" @click = "show_pet_statistics"> Попытки погладить кота </button>
   </div>
 
-  <router-view></router-view>
 </template>
 
 <style scoped>
